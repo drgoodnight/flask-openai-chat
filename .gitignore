@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*.env
+venv/
+.env
+
+# Flask / Local
+instance/
+*.sqlite3
+
+# IDEs, logs, misc
+.vscode/
+*.log
+
+# Saved responses folder
+saved_responses/

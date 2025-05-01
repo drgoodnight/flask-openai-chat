@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flask + OpenAI Chat Demo</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    textarea { width: 100%; height: 6em; margin-bottom: 1em; }
+    .chat-box { margin-top: 1em; }
+    .message { margin-bottom: 1em; padding: 0.5em; border-radius: 4px; }
+    .user { background: #e9f7ff; border-left: 4px solid #17a2b8; }
+    .assistant { background: #f1f1f1; border-left: 4px solid #007BFF; }
+    .flashes { list-style: none; padding: 0; }
+    .flash.warning { color: #856404; background: #fff3cd; padding: 0.5em; border-radius: 4px; }
+    .flash.danger  { color: #721c24; background: #f8d7da; padding: 0.5em; border-radius: 4px; }
+    .flash.success { color: #155724; background: #d4edda; padding: 0.5em; border-radius: 4px; }
+    button, .save-btn { padding: 0.5em 1em; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button { background: #007BFF; }
+    button:hover { background: #0056b3; }
+    .save-btn { background: #28a745; }
+    .reset-btn { background: #dc3545; margin-top: 1em; }
+    label { font-weight: bold; display: block; margin-top: 1em; }
+    .save-options { margin-top: 1em; }
+    .save-options input[type="text"] { width: auto; display: inline-block; margin-right: 0.5em; }
+  </style>
+</head>
+<body>
+  <h1>Ask OpenAI (System & User Roles)</h1>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="flashes">
+    {% for category, msg in messages %}
+      <li class="flash {{ category }}">{{ msg }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+  {% endwith %}
+
+  <form method="post">
+    <label for="system_prompt">System Prompt (optional):</label>
+    <textarea id="system_prompt" name="system_prompt" placeholder="e.g. You are a helpful assistant...">{{ system_prompt }}</textarea>
+    <label for="user_prompt">User Prompt:</label>
+    <textarea id="user_prompt" name="user_prompt" placeholder="Type your prompt here…">{{ user_prompt }}</textarea>
+    <button type="submit">Send</button>
+  </form>
+
+  {% if history %}
+    <div class="chat-box">
+      {% for msg in history %}
+        {% if msg.role == 'user' %}
+          <div class="message user"><strong>You:</strong><pre>{{ msg.content }}</pre></div>
+        {% elif msg.role == 'assistant' %}
+          <div class="message assistant"><strong>AI:</strong><pre>{{ msg.content }}</pre></div>
+        {% endif %}
+      {% endfor %}
+
+      <form method="post" class="save-options">
+        <label for="save_filename">Filename:</label>
+        <input type="text" name="save_filename" id="save_filename" placeholder="my_chat">
+        <label>Export Type:</label>
+        <label><input type="radio" name="save_type" value="full" checked> Full</label>
+        <label><input type="radio" name="save_type" value="assistant"> Assistant Only</label>
+        <label>Format:</label>
+        <label><input type="radio" name="save_format" value="txt" checked> TXT</label>
+        <label><input type="radio" name="save_format" value="pdf"> PDF</label><br>
+        <input type="hidden" name="save_conversation" value="1">
+        <button type="submit" class="save-btn">Save Conversation</button>
+      </form>
+
+      <form method="post">
+        <input type="hidden" name="reset_conversation" value="1">
+        <button type="submit" class="reset-btn">Restart Conversation</button>
+      </form>
+    </div>
+  {% endif %}
+</body>
+</html>
