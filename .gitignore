@@ -15,3 +15,6 @@ instance/
 
 # Saved responses folder
 saved_responses/
+
+#env folder
+chatGPT/
