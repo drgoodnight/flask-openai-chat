@@ -1,47 +1,183 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Flask + OpenAI Chat Demo</title>
   <style>
-    body { font-family: sans-serif; margin: 2em; }
-    textarea { width: 100%; height: 6em; margin-bottom: 1em; }
+    :root {
+      --bg-color: #ffffff;
+      --text-color: #000000;
+      --user-bg: #e9f7ff;
+      --assistant-bg: #f1f1f1;
+      --border-user: #17a2b8;
+      --border-assistant: #007BFF;
+      --btn-bg: #007BFF;
+      --btn-hover: #0056b3;
+      --save-btn-bg: #28a745;
+      --reset-btn-bg: #dc3545;
+      --flash-warning-bg: #fff3cd;
+      --flash-warning-text: #856404;
+      --flash-danger-bg: #f8d7da;
+      --flash-danger-text: #721c24;
+      --flash-success-bg: #d4edda;
+      --flash-success-text: #155724;
+    }
+    .dark-mode {
+      --bg-color: #121212;
+      --text-color: #e0e0e0;
+      --user-bg: #283139;
+      --assistant-bg: #1e1e1e;
+      --border-user: #81a1c1;
+      --border-assistant: #5e81ac;
+      --btn-bg: #5e81ac;
+      --btn-hover: #4c6a99;
+      --save-btn-bg: #a3be8c;
+      --reset-btn-bg: #bf616a;
+      --flash-warning-bg: #5e5836;
+      --flash-warning-text: #fff3cd;
+      --flash-danger-bg: #5b1e1e;
+      --flash-danger-text: #f8d7da;
+      --flash-success-bg: #2e4a34;
+      --flash-success-text: #d4edda;
+    }
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: sans-serif;
+      margin: 2em;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    textarea {
+      width: 100%;
+      height: 6em;
+      margin-bottom: 1em;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      border: 1px solid var(--text-color);
+    }
     .chat-box { margin-top: 1em; }
-    .message { margin-bottom: 1em; padding: 0.5em; border-radius: 4px; }
-    .user { background: #e9f7ff; border-left: 4px solid #17a2b8; }
-    .assistant { background: #f1f1f1; border-left: 4px solid #007BFF; }
+    .message {
+      margin-bottom: 1em;
+      padding: 0.5em;
+      border-radius: 4px;
+    }
+    .user {
+      background: var(--user-bg);
+      border-left: 4px solid var(--border-user);
+    }
+    .assistant {
+      background: var(--assistant-bg);
+      border-left: 4px solid var(--border-assistant);
+    }
     .flashes { list-style: none; padding: 0; }
-    .flash.warning { color: #856404; background: #fff3cd; padding: 0.5em; border-radius: 4px; }
-    .flash.danger  { color: #721c24; background: #f8d7da; padding: 0.5em; border-radius: 4px; }
-    .flash.success { color: #155724; background: #d4edda; padding: 0.5em; border-radius: 4px; }
-    button, .save-btn { padding: 0.5em 1em; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    button { background: #007BFF; }
-    button:hover { background: #0056b3; }
-    .save-btn { background: #28a745; }
-    .reset-btn { background: #dc3545; margin-top: 1em; }
-    label { font-weight: bold; display: block; margin-top: 1em; }
+    .flash.warning {
+      color: var(--flash-warning-text);
+      background: var(--flash-warning-bg);
+      padding: 0.5em;
+      border-radius: 4px;
+    }
+    .flash.danger {
+      color: var(--flash-danger-text);
+      background: var(--flash-danger-bg);
+      padding: 0.5em;
+      border-radius: 4px;
+    }
+    .flash.success {
+      color: var(--flash-success-text);
+      background: var(--flash-success-bg);
+      padding: 0.5em;
+      border-radius: 4px;
+    }
+    button {
+      padding: 0.5em 1em;
+      background: var(--btn-bg);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover { background: var(--btn-hover); }
+    .save-btn { background: var(--save-btn-bg); }
+    .reset-btn {
+      background: var(--reset-btn-bg);
+      margin-top: 1em;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 1em;
+    }
     .save-options { margin-top: 1em; }
-    .save-options input[type="text"] { width: auto; display: inline-block; margin-right: 0.5em; }
+    .save-options input[type="text"] {
+      width: auto;
+      display: inline-block;
+      margin-right: 0.5em;
+    }
+    /* Dark mode toggle switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+      margin-bottom: 1em;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--btn-bg); }
+    input:checked + .slider:before { transform: translateX(26px); }
   </style>
 </head>
 <body>
+  <label class="switch">
+    <input type="checkbox" id="toggleDark">
+    <span class="slider"></span>
+  </label> Toggle Dark Mode
   <h1>Ask OpenAI (System & User Roles)</h1>
+
   {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <ul class="flashes">
-    {% for category, msg in messages %}
-      <li class="flash {{ category }}">{{ msg }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for category, msg in messages %}
+          <li class="flash {{ category }}">{{ msg }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
   {% endwith %}
 
   <form method="post">
     <label for="system_prompt">System Prompt (optional):</label>
-    <textarea id="system_prompt" name="system_prompt" placeholder="e.g. You are a helpful assistant...">{{ system_prompt }}</textarea>
+    <textarea id="system_prompt" name="system_prompt"
+      placeholder="e.g. You are a helpful assistant...">{{ system_prompt }}</textarea>
+
     <label for="user_prompt">User Prompt:</label>
-    <textarea id="user_prompt" name="user_prompt" placeholder="Type your prompt here…">{{ user_prompt }}</textarea>
+    <textarea id="user_prompt" name="user_prompt"
+      placeholder="Type your prompt here…">{{ user_prompt }}</textarea>
+
     <button type="submit">Send</button>
   </form>
 
@@ -58,12 +194,15 @@
       <form method="post" class="save-options">
         <label for="save_filename">Filename:</label>
         <input type="text" name="save_filename" id="save_filename" placeholder="my_chat">
+
         <label>Export Type:</label>
         <label><input type="radio" name="save_type" value="full" checked> Full</label>
         <label><input type="radio" name="save_type" value="assistant"> Assistant Only</label>
+
         <label>Format:</label>
         <label><input type="radio" name="save_format" value="txt" checked> TXT</label>
         <label><input type="radio" name="save_format" value="pdf"> PDF</label><br>
+
         <input type="hidden" name="save_conversation" value="1">
         <button type="submit" class="save-btn">Save Conversation</button>
       </form>
@@ -74,5 +213,22 @@
       </form>
     </div>
   {% endif %}
+
+  <script>
+    const toggle = document.getElementById("toggleDark");
+    const root = document.documentElement;
+    function setTheme(theme) {
+      if (theme === 'dark') root.classList.add('dark-mode');
+      else root.classList.remove('dark-mode');
+      localStorage.setItem('theme', theme);
+    }
+    toggle.addEventListener('change', () => {
+      setTheme(toggle.checked ? 'dark' : 'light');
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('theme') || 'light';
+      setTheme(saved);
+    });
+  </script>
 </body>
 </html>
